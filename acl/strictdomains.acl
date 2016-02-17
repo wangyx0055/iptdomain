@@ -1,7 +1,17 @@
-# The following two domains are "invented" by the domainblock daemon
+# The following two domains are "invented" by the iptdomain daemon
 # to mark the cases where the domain name is not found where it should
 # be, and where an IP address is found as domain name. By including
 # these as blocked domains, the filtering becomes quite strict.
 
 .domain.not.found
+	This invented domain name is ascribed to all packets that
+	should have a domain name but don't. E.g., an HTTP GET request
+	without Host: header, or an SSL ClientHello message without an
+	SNI extension.
+	
 .ip.address.found
+	This invented domain name is ascribed to all packets that
+	should have a domain name, but instead have an IP address (in
+	text form). Typically an HTTP request with an IP address as
+	Host: header value. The iptdoman daemon then adds this tail to
+	the IP address text, allowing it to be blacklisted here.
