@@ -10,8 +10,8 @@ The domain database is built from a given collection of acl files
 by line basis: each line that starts with a period is taken to hold a
 domain name to block as its first token, with optional commentary text
 following. The acl file format is ameniable to the
-[Squidblacklist.org](http://squidblacklist.org), which are loadable
-without processing.
+[Squidblacklist.org](http://squidblacklist.org) blacklists, which are
+loadable without pre-processing.
 
 ## Dendencies
 
