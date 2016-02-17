@@ -9,13 +9,13 @@ iptdomain \- Daemon for packet filtering based on domain names.
 .SH DESCRIPTION
 The \fBiptdomain\fR filtering daemon is a \fInetfilter queue
 handler\fR that checks the domain names present in certain HTTP and
-SSL connections against a database of "prohibited" domains.
+SSL packets against a database of "prohibited" domains.
 
 The database is built from the given collection of access control list
-files, where each file is dealt with on a line by line basis: each
-line that starts with a period is taken to hold a domain name to
-block as its first token, with optional commentary text following.
-The following illustrates the format of an acl file:
+files (acl-file), where each file is dealt with on a line by line
+basis: each line that starts with a period is taken to hold a domain
+name to block as its first token, with optional commentary text
+following. The following illustrates the format of an acl file:
 
  \.apple.com
  \.microsoft.com
@@ -25,17 +25,19 @@ The following illustrates the format of an acl file:
  \.akamaihd.net
 
 Lines where the very first character is a period declare a domain to
-block. Thus, the example above would \fInot\fR include "debian.net",
-since that line does not start with a period. Basically, any other
-line are ignored, as well as any comment following domain names.
+be blocked. Thus, the example above would \fInot\fR include
+"debian.net", since that line does not start with a period. Basically,
+those other lines are ignored, and so is text following the domain
+names.
 
 Note that the acl file format is ameniable to the
 .URL www.squidblacklist.org Squidblacklist.org
-blacklists, which are loadable without processing.
+blacklists, which are loadable without pre processing.
 
 \fBiptdomain\fR is normally installed together with the control script
-\fBiptdomainctl\fR and the site acl files in a directory tree under
-\fI/etc/iptdomain\fR. See \fBiptdomainctl\fR for details.
+\fBiptdomainctl\fR and configuration directory tree under
+\fI/etc/iptdomain\fR holding acl files.
+See \fBiptdomainctl\fR for details.
 
 .SS
 .B Blocked domain name
@@ -69,13 +71,13 @@ applies to request packets for HTTP, and also for SSL
 .B limits
 \fBiptdomain\fR is built to cope with a huge domain names database,
 i.e., some millions of domain names. For example, if using all
-Squidblacklist's acl files as of date, it would hold would h 1.7
-million blocked domain names.
+Squidblacklist's acl files as of date, it would hold 1.7 million
+blocked domain names.
 
-If the database is large, the loading may take a couple of seconds.
-Internally \fBiptdomain\fR holds an ordered array of domain names for
-initial name lookup, and a fixed size, single slot hashtable of lookup
-verdicts, to speed up subsequent checks.
+When the database is large, the loading may take a couple of seconds
+(if it's a slow machine). Internally the database is an ordered array
+of domain names for initial name lookup, and a fixed size, single slot
+hashtable cache of lookup verdicts, to speed up subsequent checks.
 
 .SH CONFIGURATION
 

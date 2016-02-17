@@ -1,7 +1,7 @@
 .mso www.tmac
 .TH iptdomainctl 8
 .SH NAME
-iptdomainctl \- control script for the \fBnsblocker\fR filtering
+iptdomainctl \- control script for the \fBiptdomain\fR filtering
 daemon.
 
 .SH SYNOPSIS
@@ -44,26 +44,33 @@ packets to \fINFQUEUE\fR 99, and to start an \fIiptdomain\fR daemon
 that attaches to that queue.
 
 You might want to edit the \fBiptdomainctl\fR to suite your firewall.
-In particular, when matching, the queue rule will end in a filtering
-verdict, i.e., either RETURN or DROP.
+In particular, it is worth to note that when the queue rule matches,
+the filtering decision is passed on to the \fBiptdomain\fR daemon,
+which results in either ACCEPT or DROP.
 
 .SH FILES
+
+.SS /usr/sbin/iptdomainctl
+This is the control script documented here.
+
+.SS /usr/sbin/iptdomain
+THis is the filtering daemon.
+
 .SS /etc/iptdomain
 The \fBiptdomainctl\fR script, the \fBiptdomain\fR program and acl
 files are kept in the \fI/etc/iptdomain\fR directory, with layout as
 follows.
 
-.SS /etc/iptdomain/bin
-This directory holds \fBiptdomainctl\fR and \fBiptdomain\fR, and is
-also the current working directory for \fBiptdomain\fR.
-
+.TP
 .SS /etc/iptdomain/acl
 This directory is intended for holding all acl files that may be used
 in a blocking scenario.
 
+.TP
 .SS /etc/iptdomain/blocked
 This directory is intended for holding links to the selected acl files
 to use when next starting or reloading \fBiptdomain\fR.
+.RE
 
 .SS /var/log/iptdomain.YYYYmmdd
 This is the logfile capturing the \fBiptdomain\fR daemon's activity
