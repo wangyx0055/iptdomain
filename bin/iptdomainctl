@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# This is a control script for domainblock.
+# This is a control script for iptdomain.
 #
 
 if [ -z "$1" ] ; then
@@ -9,12 +9,12 @@ if [ -z "$1" ] ; then
 fi
 
 #cd $(dirname $(readlink $0))
-DOMAINBLOCKDIR=/etc/domainblock
+IPTDOMAINDIR=/etc/iptdomain
 
-function start_domainblock() {
-    LOG=/var/log/domainblock.$(date +%Y%m%d)
-    BLOCKED=( $DOMAINBLOCKDIR/blocked/*.acl )
-    domainblock ${BLOCKED[@]} >> $LOG 2>&1 &
+function start_iptdomain() {
+    LOG=/var/log/iptdomain.$(date +%Y%m%d)
+    BLOCKED=( $IPTDOMAINDIR/blocked/*.acl )
+    iptdomain ${BLOCKED[@]} >> $LOG 2>&1 &
 }
 
 # Set up or remove iptables rules, arg -I, -A or -D
@@ -25,17 +25,17 @@ function iptables_rules() {
 
 case $1 in
     start)
-	pkill -x domainblock
-	start_domainblock
+	pkill -x iptdomain
+	start_iptdomain
 	iptables_rules -A
 	;;
     reload)
-	pkill -x domainblock
-	start_domainblock
+	pkill -x iptdomain
+	start_iptdomain
 	;;
     stop)
 	iptables_rules -D
-	pkill -x domainblock
+	pkill -x iptdomain
 	;;
     *)
 	echo "Use start, stop or reload" >&2
