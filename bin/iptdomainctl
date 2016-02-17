@@ -1,0 +1,43 @@
+#!/bin/bash
+#
+# This is a control script for domainblock.
+#
+
+if [ -z "$1" ] ; then
+    echo "start or stop?"
+    exit 1
+fi
+
+#cd $(dirname $(readlink $0))
+DOMAINBLOCKDIR=/etc/domainblock
+
+function start_domainblock() {
+    LOG=/var/log/domainblock.$(date +%Y%m%d)
+    BLOCKED=( $DOMAINBLOCKDIR/blocked/*.acl )
+    domainblock ${BLOCKED[@]} >> $LOG 2>&1 &
+}
+
+# Set up or remove iptables rules, arg -I, -A or -D
+function iptables_rules() {
+    TABLE=OUTPUT
+    iptables $1 $TABLE -p tcp -j NFQUEUE --queue-num 99
+}
+
+case $1 in
+    start)
+	pkill -x domainblock
+	start_domainblock
+	iptables_rules -A
+	;;
+    reload)
+	pkill -x domainblock
+	start_domainblock
+	;;
+    stop)
+	iptables_rules -D
+	pkill -x domainblock
+	;;
+    *)
+	echo "Use start, stop or reload" >&2
+	;;
+esac

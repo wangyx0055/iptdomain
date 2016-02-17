@@ -1,0 +1,77 @@
+.mso www.tmac
+.TH iptdomainctl 8
+.SH NAME
+iptdomainctl \- control script for the \fBnsblocker\fR filtering
+daemon.
+
+.SH SYNOPSIS
+.B iptdomainctl start\fR - to start filtering
+.br
+.B iptdomainctl reload\fR - to change filtering
+.br
+.B iptdomainctl stop\fR - to stop filtering
+
+.SH DESCRIPTION
+The \fBiptdomain\fR filtering daemon is a \fInetfilter queue
+handler\fR that checks the domain names present in certain HTTP and SSL
+connections against a database of "prohibited" domains.
+
+\fBiptdomainctl\fR is a small and simple control script to manage the
+firewall set up with respect to \fBiptdomain\fR.
+.TP
+.SS
+.B start
+The \fBstart\fR command installs iptables rules to direct traffic to
+the \fBiptdomain\fR queue, and then it starts an \fBiptdomain\fR
+daemon for performing the filtering. Note that network traffic gets
+held up until the daemon has loaded its database.
+.TP
+.SS
+.B stop
+The \fBstop\fR command removes the installed iptables rules, and kills
+the daemon.
+.TP
+.SS
+.B reload
+The \fBreload\fR command restarts the filtering daemon without
+affecting the iptables rules.
+
+.RE
+.in +8
+
+Filtering is started by adding \fIiptables rules\fR to direct network
+packets to \fINFQUEUE\fR 99, and to start an \fIiptdomain\fR daemon
+that attaches to that queue.
+
+You might want to edit the \fBiptdomainctl\fR to suite your firewall.
+In particular, when matching, the queue rule will end in a filtering
+verdict, i.e., either RETURN or DROP.
+
+.SH FILES
+.SS /etc/iptdomain
+The \fBiptdomainctl\fR script, the \fBiptdomain\fR program and acl
+files are kept in the \fI/etc/iptdomain\fR directory, with layout as
+follows.
+
+.SS /etc/iptdomain/bin
+This directory holds \fBiptdomainctl\fR and \fBiptdomain\fR, and is
+also the current working directory for \fBiptdomain\fR.
+
+.SS /etc/iptdomain/acl
+This directory is intended for holding all acl files that may be used
+in a blocking scenario.
+
+.SS /etc/iptdomain/blocked
+This directory is intended for holding links to the selected acl files
+to use when next starting or reloading \fBiptdomain\fR.
+
+.SS /var/log/iptdomain.YYYYmmdd
+This is the logfile capturing the \fBiptdomain\fR daemon's activity
+reporting to its \fIstderr\fR.
+
+.SH AUTHOR
+Ralph Rönnquist <ralph.ronnquist@gmail.com>
+
+.SH SEE ALSO
+.B iptdomain,
+.B iptables

@@ -1,0 +1,7 @@
+# The following two domains are "invented" by the domainblock daemon
+# to mark the cases where the domain name is not found where it should
+# be, and where an IP address is found as domain name. By including
+# these as blocked domains, the filtering becomes quite strict.
+
+.domain.not.found
+.ip.address.found

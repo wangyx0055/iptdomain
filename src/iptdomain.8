@@ -1,0 +1,108 @@
+.mso www.tmac
+.TH iptdomain 8
+.SH NAME
+iptdomain \- Daemon for packet filtering based on domain names.
+
+.SH SYNOPSIS
+.B "iptdomain \fIacl-file ...\fR
+
+.SH DESCRIPTION
+The \fBiptdomain\fR filtering daemon is a \fInetfilter queue
+handler\fR that checks the domain names present in certain HTTP and
+SSL connections against a database of "prohibited" domains.
+
+The database is built from the given collection of access control list
+files, where each file is dealt with on a line by line basis: each
+line that starts with a period is taken to hold a domain name to
+block as its first token, with optional commentary text following.
+The following illustrates the format of an acl file:
+
+ \.apple.com
+ \.microsoft.com
+ debian.net
+ \.google.com
+ \.www.nsa.gov.edgekey.net
+ \.akamaihd.net
+
+Lines where the very first character is a period declare a domain to
+block. Thus, the example above would \fInot\fR include "debian.net",
+since that line does not start with a period. Basically, any other
+line are ignored, as well as any comment following domain names.
+
+Note that the acl file format is ameniable to the
+.URL www.squidblacklist.org Squidblacklist.org
+blacklists, which are loadable without processing.
+
+\fBiptdomain\fR is normally installed together with the control script
+\fBiptdomainctl\fR and the site acl files in a directory tree under
+\fI/etc/iptdomain\fR. See \fBiptdomainctl\fR for details.
+
+.SS
+.B Blocked domain name
+All domains of the acl files are taken to be blocked, including all
+their sub domains. For example, if an acl file declares ".acme.com" to
+be blocked, then all domain names ending with that are blocked, e.g.
+including ".www.acme.com".
+
+The blocking applies to the domains and not the IP addresses. It is
+effectuated by recognizing the "hello" packets of HTTP and SSL
+traffic, and extracting their targeted server domains.
+
+.SS
+.B Domain \fI.domain.not.found\fI
+\fBiptdomain\fR uses the invented domain name "domain.not.found" when
+a targeted host is not found. This concerns HTTP request packets
+without "Host:" header, and SSL \fIClientHello\fR messages without
+\fIServer Name Indicator (SNI)\fR extension. You may include that
+domain name in an acl file to prohibit all such traffic. This includes
+SSL protocol versions before 3.3, and buggy SSL clients.
+
+.SS
+.B domain ".ip.address.found"
+\fBiptdomain\fR uses the invented domain name "ip.address.found"
+when the targeted host name appear as an IP address rather than domain
+name. This is to allow for a blanket blocking of such traffic. This
+applies to request packets for HTTP, and also for SSL
+\fICLientHello\fR messages when the IP address is used as SNI.
+
+.SS
+.B limits
+\fBiptdomain\fR is built to cope with a huge domain names database,
+i.e., some millions of domain names. For example, if using all
+Squidblacklist's acl files as of date, it would hold would h 1.7
+million blocked domain names.
+
+If the database is large, the loading may take a couple of seconds.
+Internally \fBiptdomain\fR holds an ordered array of domain names for
+initial name lookup, and a fixed size, single slot hashtable of lookup
+verdicts, to speed up subsequent checks.
+
+.SH CONFIGURATION
+
+The use of \fBiptdomain\fR includes having one or more iptables rules
+directing traffic to it. For example:
+
+.RS
+iptables -A FORWARD -p tcp -j NFQUEUE --queue-num 99
+.RE
+
+The example rule directs all FORWARD tcp traffic to the filter, and
+importantly, the rule will stop all FORWARD tcp traffic until the
+filter is started.
+
+Note that the filter uses queue number 99 by default.
+
+.SH ENVIRONMENT
+.TP
+.BR IPTDOMAIN_QUEUE
+The environment variable \fBIPTDOMAIN_QUEUE\fR, if set to a decimal
+number in ASCII, nominates the netfilter queue to use. Valid queue
+numbers are 0 to 65535. The default value is 99.
+
+.SH AUTHOR
+Ralph Rönnquist <ralph.ronnquist@gmail.com>
+
+.SH SEE ALSO
+.B iptdomainctl,
+.B iptables
+
