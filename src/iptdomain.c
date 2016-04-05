@@ -86,6 +86,8 @@ static void view_payload(unsigned char *data,int length) {
  */
 static unsigned char buffer[1000];
 
+#define DEBUG 0
+
 /**
  * Return the host name of an SSL 'Client Hello' record with SNI
  * extension, or 0 when not found. This clobbers the buffer.
@@ -99,10 +101,12 @@ static unsigned char *ssl_host(unsigned char *data,int length) {
     }
     // record_length = 256 * p[3] + p[4]
     // handshake_message_length = 256 * p[7] + p[8]
-    if ( 256 * p[3] + p[4] != 256 * p[7] + p[8] ) {
+    if ( 256 * p[3] + p[4] != 256 * p[7] + p[8] + 4 ) {
 	return 0;
     }
-    //fprintf( stderr, "Client Hello\n" );
+#if DEBUG
+    fprintf( stderr, "Client Hello\n" );
+#endif
     // Note minor version p[2] is not checked
     for ( ;; ) {
 	if ( p[9] != 0x03 || p[10] != 0x03 ) { // TLS 1.2 (?ralph?)
@@ -207,18 +211,19 @@ static int handle_packet(
 {
     u_int32_t id = get_packet_id( nfa );
     unsigned char *data;
-    int length = nfq_get_payload( nfa, &data);
+    int length = nfq_get_payload( nfa, &data );
     int verdict = NF_ACCEPT;
-#if 0
+#if DEBUG
+    view_payload( data, length );
     u_int32_t ip4 = get_dest_ip4( data );
 #endif
-    if ( length >= 100 ) {
-#if 0
+    if ( length >= 90 ) {
+#if DEBUG
 	char *tag = "HTTP";
 #endif
 	unsigned char *host = http_host( data, length );
 	if ( host == 0 ) {
-#if 0
+#if DEBUG
 	    tag = "SSL";
 #endif
 	    host = ssl_host( data, length );
@@ -238,7 +243,7 @@ static int handle_packet(
 			".ip.address.found" );
 	    }
 	    int i = lookup_cache( host );
-#if 0
+#if DEBUG
 	    fprintf( stderr, "%s %s %s cache %d\n",
 		     tell_ip( ip4 ), tag, host, i );
 #endif
@@ -253,8 +258,14 @@ static int handle_packet(
 		verdict = NF_DROP;
 	    }
 	} else {
-	    // fprintf( stderr, "%s no host\n", tell_ip( ip4 ) );
+#if DEBUG
+	    fprintf( stderr, "%s no host\n", tell_ip( ip4 ) );
+#endif
 	}
+    } else {
+#if DEBUG
+      fprintf( stderr, "%s short packet %d\n", tell_ip( ip4 ), length );
+#endif
     }
     return nfq_set_verdict(qh, id, verdict, 0, NULL);
 }
