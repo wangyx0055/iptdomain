@@ -18,8 +18,9 @@ function start_iptdomain() {
 }
 
 # Set up or remove iptables rules, arg -I, -A or -D
+# Note UPD packets should be blocked, except for port 53
 function iptables_rules() {
-    TABLE=OUTPUT
+    TABLE=FORWARD
     iptables $1 $TABLE -p tcp -j NFQUEUE --queue-num 99
 }
 
